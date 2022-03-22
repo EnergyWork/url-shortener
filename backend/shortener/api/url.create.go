@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 	"url_shortener/backend/lib"
+
+	"github.com/julienschmidt/httprouter"
 )
 
-func RequestCreateShortUrl(w http.ResponseWriter, r *http.Request) {
+func RequestCreateShortUrl(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	req := &requestCreateShortUrl{}
 	lib.InitHeaders(w)
 	l := lib.NewLogger().SetMethod("RequestCreateShortUrl")

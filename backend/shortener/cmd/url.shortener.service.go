@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"time"
 	"url_shortener/backend/lib"
+	internal_lib "url_shortener/backend/shortener/internal/lib"
 )
 
 const (
@@ -25,8 +26,7 @@ func main() {
 	// Setup and run server
 
 	config := lib.NewConfig(configFile)
-	server := lib.NewServer(config)
-	server.ConfigureRouter()
+	server := lib.NewServer(config).ConfigureRouter(internal_lib.GetDefaultRouter())
 	if err := server.ConnectToDB(); err != nil {
 		l.Error(err)
 	}
@@ -34,7 +34,7 @@ func main() {
 		l.Error(err)
 	}
 
-	// Shoutdowm handle
+	// Shoutdown handler
 
 	quit := make(chan os.Signal)
 	// holding here
@@ -49,7 +49,6 @@ func main() {
 		context.Background(),
 		3*time.Second,
 	)
-
 	defer cancel()
 	// call for shutdown
 	if err := server.Shutdown(ctx); err != nil {
