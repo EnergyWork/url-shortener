@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  postgres:
+    container_name: pg-db
+    image: postgres
+    networks:
+      - postgres
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    ports:
+      - "5432:5432"
+  
+  pgadmin:
+    container_name: pg-admin
+    image: dpage/pgadmin4
+    networks:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "ag@ag.ru"
+      PGADMIN_DEFAULT_PASSWORD: "admin"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5051:443"
+      - "5055:80"
+  
+networks:
+   postgres:
+     driver: bridge

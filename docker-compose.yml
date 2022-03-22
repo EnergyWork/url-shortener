@@ -1,0 +1,24 @@
+version: '3.9'
+
+networks:
+  net:
+    external: true
+
+services:
+  shortener:
+    container_name: shortener
+    networks:
+      - net
+    build:
+      context: .
+      dockerfile: main.dockerfile
+    command: sh -c "go mod download; go run shortener/cmd/url.shortener.go"
+    ports:
+      - '9000:9000'
+    working_dir: /app
+    volumes:
+      - ./:app
+    environment:
+      HOST: 'localhost'
+      PORT: 9000
+      
