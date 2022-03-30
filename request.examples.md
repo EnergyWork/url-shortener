@@ -1,6 +1,6 @@
 ## Create
 
-    request(post): https://host:port
+    request(post): https://host:port/create
     {
         "Header" : {
             "Request" : "url/create",
@@ -14,40 +14,29 @@
     }
 
     response:
+
     good
     {
-        "Status" : 200,
-        "ShortUrl" : "cut.er/hashid"
+        "Header" : {
+            "Content-Type" : "application/json",
+            "Status" : 200,
+        },
+        "Body" : {
+            "url_short" : "cut.er/hashid",
+        } 
     }
+
     bad
     {
-        "Status" : HttpCode,
-        "Error" : "text of error"
+        "Header" : {
+            "Status" : не 200,
+        },
+        "Body" : {
+            "Error" : "texterror",
+        } 
     }
 
 ## Redirect 
     
     request(get)
         https://host:port/hashid
-
-## List of links
-
-
-## Expande
-
-    request(post): https://host:port/hashid
-    {
-        "shortUrl" : "https://www.some_host.ru/"
-    }
-
-    response:
-    good
-    {
-        "status" : 200,
-        "longUrl" : "https://www.some_host.ru/"
-    }
-    bad
-    {
-        "status" : HttpCode,
-        "error" : "text of error"
-    }

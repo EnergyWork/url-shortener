@@ -12,12 +12,12 @@ services:
     build:
       context: .
       dockerfile: main.dockerfile
-    command: sh -c "go mod download; go run shortener/cmd/url.shortener.go"
+    command: sh -c "go mod download; go run backend/shortener/cmd/url.shortener.go"
     ports:
       - '9000:9000'
     working_dir: /app
     volumes:
-      - ./:app
+      - ./:/app
     environment:
       HOST: 'localhost'
       PORT: 9000

@@ -2,38 +2,42 @@ package lib
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/julienschmidt/httprouter"
+	"url_shortener/backend/lib"
+	"url_shortener/backend/shortener/api"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 type Server struct {
 	server    *http.Server
-	router    *httprouter.Router
+	router    *http.ServeMux
 	mtx       *sync.Mutex
-	logger    *Logger
+	log       *lib.Logger
 	db        *gorm.DB
-	config    *Config
+	config    *lib.Config
 	isStarted bool
 }
 
-func NewServer(config *Config) *Server {
+func NewServer(config *lib.Config) *Server {
 	return &Server{
-		logger: NewLogger().SetMethod("Server Setup"),
+		log:    lib.NewLogger().SetMethod("Server Setup"),
 		mtx:    &sync.Mutex{},
 		config: config,
 	}
 }
 
-func (s *Server) ConfigureRouter(router *httprouter.Router) *Server {
+func (s *Server) ConfigureRouter() {
+	router := http.NewServeMux()
+	router.HandleFunc("/create", s.RequestCreateShortUrl)
 	s.router = router
-	return s
 }
 
 func (s *Server) ConnectToDB() error {
@@ -62,13 +66,13 @@ func (s *Server) Run() error {
 		Addr:    fmt.Sprintf("%s:%s", s.config.Api.Host, s.config.Api.Port),
 		Handler: s.router,
 	}
-	s.logger.Infof("Starting http server: %s", s)
+	s.log.Infof("Starting http server: %s", s)
 	go func() {
 		if err := s.server.ListenAndServe(); err != nil {
 			if err == http.ErrServerClosed {
-				s.logger.Infof("Server closed under request: %v", err)
+				s.log.Infof("Server closed under request: %v", err)
 			} else {
-				s.logger.Fatalf("Server closed unexpect: %v", err)
+				s.log.Fatalf("Server closed unexpect: %v", err)
 			}
 			s.isStarted = false
 		}
@@ -93,10 +97,27 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
-		s.logger.Errorf("Timeout: %v", ctx.Err())
+		s.log.Errorf("Timeout: %v", ctx.Err())
 		break
 	case <-stop:
-		s.logger.Info("Finished")
+		s.log.Info("Finished")
 	}
 	return nil
+}
+
+// Controllers
+
+func (s *Server) RequestCreateShortUrl(w http.ResponseWriter, r *http.Request) {
+	req := &api.ReqCreateShortUrl{}
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		lib.RespondError(w, r, http.StatusInternalServerError, err)
+	} else if err := req.Authorize(); err != nil {
+		lib.RespondError(w, r, err.Code, err.Error())
+	} else if err := req.Validate(); err != nil {
+		lib.RespondError(w, r, err.Code, err.Error())
+	} else if rpl, err := req.Execute(s.db, *s.log); err != nil {
+		lib.RespondError(w, r, err.Code, err.Error())
+	} else {
+		lib.Respond(w, r, http.StatusOK, rpl)
+	}
 }
