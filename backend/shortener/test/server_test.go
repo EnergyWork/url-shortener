@@ -29,7 +29,7 @@ func TestServer(t *testing.T) {
 	url := "http://localhost:9000/create"
 
 	r := api.ReqCreateShortUrl{
-		UrlLong: "wwwww",
+		UrlLong: "https://yandex.ru",
 	}
 	js, _ := json.Marshal(r)
 	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(js))
