@@ -33,6 +33,6 @@ func RandStringBytesMaskImprSrcUnsafe(n int) string {
 	return *(*string)(unsafe.Pointer(&b))
 }
 
-func GetHashId(str string) string {
+func GetHashId() string {
 	return RandStringBytesMaskImprSrcUnsafe(10)
 }

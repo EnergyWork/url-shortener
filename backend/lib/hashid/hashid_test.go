@@ -14,3 +14,7 @@ func TestHashid(t *testing.T) {
 		fmt.Println(RandStringBytesMaskImprSrcUnsafe(Len))
 	}
 }
+
+func TestUUID(t *testing.T) {
+	fmt.Println(NewUUID())
+}

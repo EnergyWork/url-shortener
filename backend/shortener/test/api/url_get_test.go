@@ -9,11 +9,11 @@ import (
 	"url_shortener/backend/shortener/api"
 )
 
-func TestUrlCreate(t *testing.T) {
+func TestUrlGet(t *testing.T) {
 	// test request
-	url := "http://localhost:9000/create"
-	r := api.ReqCreateShortUrl{
-		UrlLong: "https://yandex.ru",
+	url := "http://localhost:9000/get"
+	r := api.ReqGetShortUrl{
+		UrlShort: "23", //"WTIZWxjrEv"
 	}
 	js, _ := json.Marshal(r)
 	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(js))

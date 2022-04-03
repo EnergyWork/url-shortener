@@ -37,6 +37,7 @@ func NewServer(config *lib.Config) *Server {
 func (s *Server) ConfigureRouter() {
 	router := http.NewServeMux()
 	router.HandleFunc("/create", s.RequestCreateShortUrl)
+	router.HandleFunc("/get", s.RequestGetLongtUrl)
 	s.router = router
 }
 
@@ -117,6 +118,21 @@ func (s *Server) RequestCreateShortUrl(w http.ResponseWriter, r *http.Request) {
 		lib.RespondError(w, r, err.Code, err.Error())
 	} else if rpl, err := req.Execute(s.db, *s.log); err != nil {
 		lib.RespondError(w, r, err.Code, err.Error())
+	} else {
+		lib.Respond(w, r, http.StatusOK, rpl)
+	}
+}
+
+func (s *Server) RequestGetLongtUrl(w http.ResponseWriter, r *http.Request) {
+	req := &api.ReqGetShortUrl{}
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		lib.Respond(w, r, http.StatusOK, err)
+	} else if err := req.Authorize(); err != nil {
+		lib.Respond(w, r, http.StatusOK, err)
+	} else if err := req.Validate(); err != nil {
+		lib.Respond(w, r, http.StatusOK, err)
+	} else if rpl, err := req.Execute(s.db, *s.log); err != nil {
+		lib.Respond(w, r, http.StatusOK, err)
 	} else {
 		lib.Respond(w, r, http.StatusOK, rpl)
 	}

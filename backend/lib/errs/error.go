@@ -9,7 +9,7 @@ type Error struct {
 	Code int    `json:"code"`
 }
 
-func NewError() *Error {
+func New() *Error {
 	return &Error{}
 }
 

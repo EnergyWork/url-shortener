@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"testing"
 	u "url_shortener/backend/lib"
 	"url_shortener/backend/shortener/api"
@@ -49,4 +50,14 @@ func TestServer(t *testing.T) {
 	t.Logf("response Body: %s", string(body))
 
 	server.Shutdown(context.Background())
+}
+
+func TestValidate(t *testing.T) {
+	url := "https://yandex.ru"
+	urlPattern := `^((https?|ftp|file):\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$`
+	re := regexp.MustCompile(urlPattern)
+	if !re.MatchString(url) {
+		t.Fatal("wtf url")
+	}
+	t.Log("good")
 }

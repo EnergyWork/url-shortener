@@ -12,7 +12,7 @@ import (
 )
 
 type ReqCreateShortUrl struct {
-	Meta    string
+	Header
 	UrlLong string `json:"url_long"`
 }
 
@@ -27,13 +27,13 @@ func (obj *ReqCreateShortUrl) Authorize() *errs.Error {
 func (obj *ReqCreateShortUrl) Validate() *errs.Error {
 
 	if obj.UrlLong == "" {
-		return errs.NewError().SetCode(http.StatusBadRequest).SetMsg("Validate ERROR: UrlLong must be not empty")
+		return errs.New().SetCode(http.StatusBadRequest).SetMsg("Validate ERROR: UrlLong must be not empty")
 	}
 
 	urlPattern := `^((https?|ftp|file):\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$`
 	re := regexp.MustCompile(urlPattern)
-	if re.MatchString(obj.UrlLong) {
-		return errs.NewError().SetCode(http.StatusBadRequest).SetMsg("Validate ERROR: UrlLong must be match url pattern")
+	if !re.MatchString(obj.UrlLong) {
+		return errs.New().SetCode(http.StatusBadRequest).SetMsg("Validate ERROR: UrlLong must be match url pattern")
 	}
 
 	return nil
@@ -41,10 +41,11 @@ func (obj *ReqCreateShortUrl) Validate() *errs.Error {
 
 func (obj *ReqCreateShortUrl) Execute(db *gorm.DB, log lib.Logger) (*RplCreateShortUrl, *errs.Error) {
 	rpl := &RplCreateShortUrl{}
-	log.SetID("23").SetMethod("ReqCreateShortUrl")
+	log.SetID(hashid.NewUUID()).SetMethod("url/short/create")
+
 	log.Infof("%+v", obj)
 
-	hashid := hashid.GetHashId(obj.UrlLong)
+	hashid := hashid.GetHashId()
 
 	url := &models.UrlRepresentation{
 		UrlLong:  obj.UrlLong,
@@ -54,6 +55,8 @@ func (obj *ReqCreateShortUrl) Execute(db *gorm.DB, log lib.Logger) (*RplCreateSh
 	if err := url.Create(db); err != nil {
 		return nil, err
 	}
+
+	rpl.UrlShort = url.UrlShort
 
 	return rpl, nil
 }
