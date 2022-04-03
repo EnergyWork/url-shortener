@@ -22,5 +22,8 @@ go.work
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+*.json
 /.vscode
-/j.json
+/pgadata
+/pgdata
+/backend/shortener/migration/_set_pgpass.conf.sh
