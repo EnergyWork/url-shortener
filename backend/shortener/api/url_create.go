@@ -3,20 +3,19 @@ package api
 import (
 	"net/http"
 	"regexp"
-	"url_shortener/backend/lib"
 	"url_shortener/backend/lib/errs"
 	"url_shortener/backend/lib/hashid"
+	r "url_shortener/backend/lib/request"
 	"url_shortener/backend/shortener/internal/models"
-
-	"gorm.io/gorm"
 )
 
 type ReqCreateShortUrl struct {
-	Header
+	r.Header
 	UrlLong string `json:"url_long"`
 }
 
 type RplCreateShortUrl struct {
+	r.Header
 	UrlShort string `json:"url_short"`
 }
 
@@ -39,11 +38,13 @@ func (obj *ReqCreateShortUrl) Validate() *errs.Error {
 	return nil
 }
 
-func (obj *ReqCreateShortUrl) Execute(db *gorm.DB, log lib.Logger) (*RplCreateShortUrl, *errs.Error) {
+func (obj *ReqCreateShortUrl) Execute() (r.Reply, *errs.Error) {
 	rpl := &RplCreateShortUrl{}
-	log.SetID(hashid.NewUUID()).SetMethod("url/short/create")
+	db, log := obj.DB(), obj.Log()
 
+	log.SetID(hashid.NewUUID()).SetMethod("url/short/create")
 	log.Infof("%+v", obj)
+	defer log.Infof("%+v", rpl)
 
 	hashid := hashid.GetHashId()
 

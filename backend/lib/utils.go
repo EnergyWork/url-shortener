@@ -10,12 +10,12 @@ func InitHeaders(w http.ResponseWriter) {
 }
 
 func RespondError(w http.ResponseWriter, r *http.Request, code int, err error) {
-	Respond(w, r, code, map[string]string{"error": err.Error()})
+	Respond(w, r, map[string]string{"error": err.Error()})
 }
 
-func Respond(w http.ResponseWriter, r *http.Request, code int, data interface{}) {
+func Respond(w http.ResponseWriter, r *http.Request, data interface{}) {
 	InitHeaders(w)
-	w.WriteHeader(code)
+	w.WriteHeader(http.StatusOK)
 	if data != nil {
 		json.NewEncoder(w).Encode(data)
 	}

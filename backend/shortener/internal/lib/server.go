@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"url_shortener/backend/lib"
+	"url_shortener/backend/lib/request"
 	"url_shortener/backend/shortener/api"
 
 	"gorm.io/driver/postgres"
@@ -106,34 +107,70 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return nil
 }
 
+// Utils
+
+func (s *Server) InitMeta(req request.Request, r *http.Request) {
+	req.SetHeader(request.SignatureHeader, r.Header.Get(request.SignatureHeader))
+	req.SetHeader(request.RequestHeader, r.Header.Get(request.RequestHeader))
+	req.SetMeta(s.db, *s.log)
+}
+
 // Controllers
 
 func (s *Server) RequestCreateShortUrl(w http.ResponseWriter, r *http.Request) {
 	req := &api.ReqCreateShortUrl{}
+
+	s.InitMeta(req, r)
+
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		lib.RespondError(w, r, http.StatusInternalServerError, err)
-	} else if err := req.Authorize(); err != nil {
-		lib.RespondError(w, r, err.Code, err.Error())
-	} else if err := req.Validate(); err != nil {
-		lib.RespondError(w, r, err.Code, err.Error())
-	} else if rpl, err := req.Execute(s.db, *s.log); err != nil {
-		lib.RespondError(w, r, err.Code, err.Error())
-	} else {
-		lib.Respond(w, r, http.StatusOK, rpl)
+		lib.Respond(w, r, err)
+		return
 	}
+
+	if err := req.Authorize(); err != nil {
+		lib.Respond(w, r, err)
+		return
+	}
+
+	if err := req.Validate(); err != nil {
+		lib.Respond(w, r, err)
+		return
+	}
+
+	rpl, err := req.Execute()
+	if err != nil {
+		lib.Respond(w, r, rpl)
+		return
+	}
+
+	lib.Respond(w, r, rpl)
 }
 
 func (s *Server) RequestGetLongtUrl(w http.ResponseWriter, r *http.Request) {
 	req := &api.ReqGetShortUrl{}
+
+	s.InitMeta(req, r)
+
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		lib.Respond(w, r, http.StatusOK, err)
-	} else if err := req.Authorize(); err != nil {
-		lib.Respond(w, r, http.StatusOK, err)
-	} else if err := req.Validate(); err != nil {
-		lib.Respond(w, r, http.StatusOK, err)
-	} else if rpl, err := req.Execute(s.db, *s.log); err != nil {
-		lib.Respond(w, r, http.StatusOK, err)
-	} else {
-		lib.Respond(w, r, http.StatusOK, rpl)
+		lib.Respond(w, r, err)
+		return
 	}
+
+	if err := req.Authorize(); err != nil {
+		lib.Respond(w, r, err)
+		return
+	}
+
+	if err := req.Validate(); err != nil {
+		lib.Respond(w, r, err)
+		return
+	}
+
+	rpl, err := req.Execute()
+	if err != nil {
+		lib.Respond(w, r, rpl)
+		return
+	}
+
+	lib.Respond(w, r, rpl)
 }

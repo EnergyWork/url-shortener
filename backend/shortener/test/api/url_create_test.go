@@ -18,7 +18,8 @@ func TestUrlCreate(t *testing.T) {
 	js, _ := json.Marshal(r)
 	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(js))
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Signature", "test_signature_sd109kjd93j1")
+	req.Header.Add("X-Request-Name", "url/short/create")
+	req.Header.Add("X-Signature", "test_signature_sd109kjd93j1")
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
