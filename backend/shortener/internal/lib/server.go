@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"url_shortener/backend/lib"
+	"url_shortener/backend/lib/errs"
 	"url_shortener/backend/lib/request"
 	"url_shortener/backend/shortener/api"
 
@@ -173,4 +174,8 @@ func (s *Server) RequestGetLongtUrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	lib.Respond(w, r, rpl)
+}
+
+func (s *Server) execute(req request.Request) (request.Reply, *errs.Error) {
+	return nil, nil 
 }
